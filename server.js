@@ -9,4 +9,4 @@ app.use('/', express.static(path.join(__dirname, 'dist')));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-app.listen(app.get('port'), () => console.log(`Example app listening on port ${port}!`))
+app.listen(app.get('port'), () => console.log(`Listening on port ${app.get('port')}!`))
