@@ -1,5 +1,5 @@
 const fs = require('fs');
-const path = required('path');
+const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
