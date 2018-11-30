@@ -4,7 +4,8 @@
   "description": "The People’s Piano will be an SPA that is a hub for discovering and appreciating piano music. The interface will provide a user a way to play the piano and listen to other talented artists as well. The site will use the Web MIDI API to encourage pianists to use their keyboards to produce quality music. Users will have access to a chat and a list of popular players that they can comment on and listen to.",
   "main": "index.js",
   "scripts": {
-    "start": "webpack-dev-server --mode development --open --hot",
+    "dev": "webpack-dev-server --mode development --open --hot",
+    "start": "node server.js",
     "build": "webpack --mode production",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
