@@ -7,11 +7,16 @@ export class MidiController extends React.Component  {
     super(props);
     this.state = {
       loading: false,
+      error: false,
       devices: [],
     };
+  }
+
+  componentDidMount() {
+    // Initalize our WebMidi instance
     WebMidi.enable(err => {
       if (err) {
-        console.log("WebMidi could not be enabled.", err)
+        this.setState({ error: true });
       } else {
         WebMidi.addListener("connected", () => this.updateDevices());
         WebMidi.addListener("disconnected", () => this.updateDevices());
@@ -59,12 +64,18 @@ export class MidiController extends React.Component  {
     const {
       devices,
       loading,
+      error,
     } = this.state;
     return (
       <div>
-        <select onChange={this.handleDeviceSelect}>
-          {this.state.devices.map(device => <option key={device} value={device}>{device}</option>)}
-        </select>
+        {error ? (
+          <span>Web MIDI is not supported by this browser</span>
+        ) : (
+          <select onChange={this.handleDeviceSelect}>
+            {this.state.devices.map(device => <option key={device} value={device}>{device}</option>)}
+          </select>
+        )}
+
         {loading && <span>Loading...</span>}
       </div>
     );
