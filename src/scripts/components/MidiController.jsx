@@ -43,7 +43,7 @@ export class MidiController extends React.Component  {
   }
 
   updateDevices() {
-    const devices = WebMidi.inputs.map(input => input.name);
+    const devices = webMidi.inputs.map(input => input.name);
     this.setState({ devices });
     this.setDevice(devices[0]);
   }

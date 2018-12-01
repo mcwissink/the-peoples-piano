@@ -9,6 +9,8 @@ export class TwitchChat extends React.Component {
   }
 
   updateDimensions = () => {
+    // Since the iframe for the twitchchat takes height as a number, we have to properly get the window
+    // height since we can't use regular css to make it full size
     this.setState({height: window.innerHeight});
   }
 
@@ -31,6 +33,7 @@ export class TwitchChat extends React.Component {
     console.log(height);
     return (
       <iframe
+        className="twitch-chat"
         frameBorder="0"
         scrolling="no"
         id="chat_embed"
