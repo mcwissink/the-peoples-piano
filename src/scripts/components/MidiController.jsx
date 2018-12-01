@@ -1,21 +1,22 @@
 import React from 'react';
-import webMidi from 'webmidi';
+import WebMidi from 'webmidi';
+import Soundfont from 'soundfont-player';
 
 export class MidiController extends React.Component  {
   constructor (props) {
     super(props);
-    this.webMidi = webMidi;
-    this.webMidi.enable(err => {
+    this.state = {
+      loading: false,
+      devices: [],
+    };
+    WebMidi.enable(err => {
       if (err) {
         console.log("WebMidi could not be enabled.", err)
       } else {
-        this.webMidi.addListener("connected", () => this.updateDevices());
-        this.webMidi.addListener("disconnected", () => this.updateDevices());
+        WebMidi.addListener("connected", () => this.updateDevices());
+        WebMidi.addListener("disconnected", () => this.updateDevices());
       }
     });
-    this.state = {
-      devices: [],
-    };
   }
 
   handleDeviceSelect = (e) => {
@@ -23,16 +24,22 @@ export class MidiController extends React.Component  {
   }
 
   setDevice = (device) => {
+    // Tell the user we are loading things
+    this.setState({ loading: true });
     // Clean up an existing connections
     this.removeExistingDevice();
     // Setup the devicing
-    this.input = this.webMidi.getInputByName(device);
-    this.input.addListener("noteon", "all", e => {
-      console.log(e)
-    });
+    this.input = WebMidi.getInputByName(device);
+    // Create the soundfont
+    Soundfont.instrument(new AudioContext(), 'electric_piano_1').then(soundfont => {
+      this.setState({ loading: false });
+      this.input.addListener("noteon", "all", e => {
+        soundfont.play(e.note.number);
+      });
 
-    this.input.addListener("noteoff", "all", e => {
-      console.log("Received 'noteoff' message (" + e.note.name + e.note.octave + ").");
+      this.input.addListener("noteoff", "all", e => {
+
+      });
     });
   }
 
@@ -43,7 +50,7 @@ export class MidiController extends React.Component  {
   }
 
   updateDevices() {
-    const devices = webMidi.inputs.map(input => input.name);
+    const devices = WebMidi.inputs.map(input => input.name);
     this.setState({ devices });
     this.setDevice(devices[0]);
   }
@@ -51,11 +58,15 @@ export class MidiController extends React.Component  {
   render() {
     const {
       devices,
+      loading,
     } = this.state;
     return (
-      <select onChange={this.handleDeviceSelect}>
-        {this.state.devices.map(device => <option key={device} value={device}>{device}</option>)}
-      </select>
+      <div>
+        <select onChange={this.handleDeviceSelect}>
+          {this.state.devices.map(device => <option key={device} value={device}>{device}</option>)}
+        </select>
+        {loading && <span>Loading...</span>}
+      </div>
     );
   }
 }
