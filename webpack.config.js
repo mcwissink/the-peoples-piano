@@ -7,8 +7,9 @@ module.exports = {
   ],
   output: {
     path: path.resolve('dist'),
-    filename: 'bundled.js'
+    filename: 'bundle.js'
   },
+  mode: 'development',
   module: {
     rules: [
       {
