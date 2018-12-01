@@ -1,15 +1,29 @@
-const fs = require('fs');
-const path = require('path');
-const express = require('express');
-const bodyParser = require('body-parser');
-const app = express();
+const WebSocket = require('ws');
+const WSServer = WebSocket.Server;
+const server = require('http').createServer();
+const app = require('./http-server');
+const PORT = process.env.PORT || 3000
+// Create web socket server on top of a regular http server
+const wss = new WSServer({
 
-const APP_PATH = path.join(__dirname, 'dist');
-console.log(APP_PATH);
-app.set('port', (process.env.PORT || 3000));
-app.use('/', express.static(APP_PATH));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
-app.use('*', express.static(APP_PATH));
+  server: server
+});
 
-app.listen(app.get('port'), () => console.log(`Listening on port  ${app.get('port')}!`));
+// Also mount the app here
+server.on('request', app);
+
+wss.on('connection', ws => {
+
+  ws.on('message', message => {
+    // Broadcast to all other clients
+    wss.clients.forEach((client) => {
+      if (client !== ws && client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
+  });
+});
+
+server.listen(PORT, () => {
+  console.log(`http/ws server listening on ${PORT}`);
+});

@@ -10,10 +10,14 @@ export class MidiController extends React.Component  {
       error: false,
       devices: [],
     };
+    // Create our websocket
+    this.socket = new WebSocket(window.location.href.replace(/^http/, "ws"));
+    this.socket.onmessage = this.socketOnMessage;
+
   }
 
   componentDidMount() {
-    // Initalize our WebMidi instance
+    // Initalize the WebMidi instance
     WebMidi.enable(err => {
       if (err) {
         this.setState({ error: true });
@@ -22,6 +26,22 @@ export class MidiController extends React.Component  {
         WebMidi.addListener("disconnected", () => this.updateDevices());
       }
     });
+
+    // Initalize the Soundfont
+    Soundfont.instrument(new AudioContext(), 'electric_piano_1').then(soundfont => {
+      // Set a reference to the sound font so we can call it later
+      this.soundfont = soundfont;
+      // We are done loading
+      this.setState({ loading: false });
+    });
+  }
+
+  socketOnMessage = (message) => {
+    // Make sure we have a soundfont initalized
+    if (this.soundfont) {
+      // Play the sound sent from the server
+      this.soundfont.play(JSON.parse(message.data).note);
+    }
   }
 
   handleDeviceSelect = (e) => {
@@ -33,18 +53,16 @@ export class MidiController extends React.Component  {
     this.setState({ loading: true });
     // Clean up an existing connections
     this.removeExistingDevice();
-    // Setup the devicing
+    // Setup the input device
     this.input = WebMidi.getInputByName(device);
-    // Create the soundfont
-    Soundfont.instrument(new AudioContext(), 'electric_piano_1').then(soundfont => {
-      this.setState({ loading: false });
-      this.input.addListener("noteon", "all", e => {
-        soundfont.play(e.note.number);
-      });
+    this.input.addListener("noteon", "all", e => {
+      this.soundfont.play(e.note.number);
+      // Broadcast the note to other clients
+      this.socket.send(JSON.stringify({note: e.note.number}));
+    });
 
-      this.input.addListener("noteoff", "all", e => {
+    this.input.addListener("noteoff", "all", e => {
 
-      });
     });
   }
 
@@ -66,18 +84,16 @@ export class MidiController extends React.Component  {
       loading,
       error,
     } = this.state;
-    return (
-      <div>
-        {error ? (
-          <span>Web MIDI is not supported by this browser</span>
-        ) : (
-          <select onChange={this.handleDeviceSelect}>
-            {this.state.devices.map(device => <option key={device} value={device}>{device}</option>)}
-          </select>
-        )}
-
-        {loading && <span>Loading...</span>}
-      </div>
-    );
+    if (loading) {
+      return <span>Loading...</span>;
+    } else if (error) {
+      return <span>Web MIDI is not supported by this browser (try using Chrome)</span>;
+    } else {
+      return (
+        <select onChange={this.handleDeviceSelect}>
+          {this.state.devices.map(device => <option key={device} value={device}>{device}</option>)}
+        </select>
+      );
+    }
   }
 }
