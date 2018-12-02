@@ -1,7 +1,7 @@
 import React from 'react';
 import WebMidi from 'webmidi';
 import Soundfont from 'soundfont-player';
-import {keyboardMapping} from '../util.js';
+import {keyboardMapping, soundfonts} from '../util.js';
 
 const KEYBOARD_INPUT = "computer keyboard";
 
@@ -13,6 +13,7 @@ export class MidiController extends React.Component  {
       error: false,
       devices: [KEYBOARD_INPUT],
       device: "",
+      soundfont: soundfonts[2],
     };
     // Create our websocket
     this.socket = new WebSocket(window.location.href.replace(/^http/, "ws"), null, 10000, 10);
@@ -30,15 +31,7 @@ export class MidiController extends React.Component  {
       }
     });
 
-    // Tell the user we are loading things
-    this.setState({ loading: true });
-    // Initalize the Soundfont
-    Soundfont.instrument(new AudioContext(), 'electric_piano_1').then(soundfont => {
-      // Set a reference to the sound font so we can call it later
-      this.soundfont = soundfont;
-      // We are done loading
-      this.setState({ loading: false });
-    });
+    this.setSoundfont(this.state.soundfont);
   }
 
   socketOnMessage = message => {
@@ -47,6 +40,12 @@ export class MidiController extends React.Component  {
       // Play the sound sent from the server
       this.soundfont.play(JSON.parse(message.data).note);
     }
+  }
+
+  handleSoundfonSelect = e => {
+    const soundfont = e.target.value;
+    this.setState({ soundfont });
+    this.setSoundfont(soundfont);
   }
 
   handleDeviceSelect = e => {
@@ -70,6 +69,18 @@ export class MidiController extends React.Component  {
     }
   }
 
+  setSoundfont = soundfont => {
+    // Set soundfont and tell user we are loading
+    this.setState({ soundfont, loading: true });
+    // Initalize the Soundfont
+    Soundfont.instrument(new AudioContext(), soundfont).then(soundfont => {
+      // Set a reference to the sound font so we can call it later
+      this.soundfont = soundfont;
+      // We are done loading
+      this.setState({ loading: false });
+    });
+  }
+
   setMidiDevice = device => {
     // Setup the input device
     this.input = WebMidi.getInputByName(device);
@@ -81,11 +92,12 @@ export class MidiController extends React.Component  {
   }
 
   playNote = note => {
-    // Play the sound locally
-    this.soundfont.play(note);
-    console.log(note);
-    // Broadcast the note to other clients
-    this.socket.send(JSON.stringify({ note }));
+    if (this.soundfont !== undefined) {
+      // Play the sound locally
+      this.soundfont.play(note);
+      // Broadcast the note to other clients
+      this.socket.send(JSON.stringify({ note }));
+    }
   }
 
   removeExistingDevice() {
@@ -113,19 +125,20 @@ export class MidiController extends React.Component  {
       device,
       loading,
       error,
+      soundfont,
     } = this.state;
-    if (loading) {
-      return <span>Loading...</span>;
-    } else {
-      return (
-        <div onKeyPress={this.handleKeyPress}>
-          {error && <span>Web MIDI is not supported by this browser (try using Chrome)</span>}
-          <select value={device} onChange={this.handleDeviceSelect}>
-            <option value=""></option>
-            {this.state.devices.map(device => <option key={device} value={device}>{device}</option>)}
-          </select>
-        </div>
-      );
-    }
+    return (
+      <div onKeyPress={this.handleKeyPress}>
+        {error && <span>Web MIDI is not supported by this browser (try using Chrome)</span>}
+        <select value={device} onChange={this.handleDeviceSelect}>
+          <option value=""></option>
+          {this.state.devices.map(device => <option key={device} value={device}>{device}</option>)}
+        </select>
+        <select value={soundfont} onChange={this.handleSoundfonSelect}>
+          {soundfonts.map(sf => <option key={sf} value={sf}>{sf}</option>)}
+        </select>
+        {loading && <span> Loading...</span>}
+      </div>
+    );
   }
 }
