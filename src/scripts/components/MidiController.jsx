@@ -1,6 +1,7 @@
 import React from 'react';
 import WebMidi from 'webmidi';
 import Soundfont from 'soundfont-player';
+import {keyboardMapping} from '../util.js';
 
 const KEYBOARD_INPUT = "computer keyboard";
 
@@ -16,7 +17,6 @@ export class MidiController extends React.Component  {
     // Create our websocket
     this.socket = new WebSocket(window.location.href.replace(/^http/, "ws"), null, 10000, 10);
     this.socket.onmessage = this.socketOnMessage;
-
   }
 
   componentDidMount() {
@@ -63,7 +63,10 @@ export class MidiController extends React.Component  {
 
   handleKeyPress = e => {
     if (this.state.device === KEYBOARD_INPUT) {
-      this.playNote("C4")
+      const note = keyboardMapping[e.key];
+      if (note !== null) {
+        this.playNote(note);
+      }
     }
   }
 
@@ -80,6 +83,7 @@ export class MidiController extends React.Component  {
   playNote = note => {
     // Play the sound locally
     this.soundfont.play(note);
+    console.log(note);
     // Broadcast the note to other clients
     this.socket.send(JSON.stringify({ note }));
   }
