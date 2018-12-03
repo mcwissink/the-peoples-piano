@@ -1,29 +1,37 @@
-const WebSocket = require('ws');
-const WSServer = WebSocket.Server;
-const server = require('http').createServer();
-const app = require('./http-server');
-const PORT = process.env.PORT || 3000
-// Create web socket server on top of a regular http server
-const wss = new WSServer({
+const fs = require('fs');
+const path = require('path');
+const bodyParser = require('body-parser');
+const express  = require('express');
+const app = express();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
 
-  server: server
-});
+const APP_PATH = path.join(__dirname, 'dist');
+const PORT = process.env.PORT || 3000;
 
-// Also mount the app here
-server.on('request', app);
+// Express server
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
+app.use('/', express.static(APP_PATH));
+app.use('*', express.static(APP_PATH));
 
-wss.on('connection', ws => {
-
-  ws.on('message', message => {
-    // Broadcast to all other clients
-    wss.clients.forEach((client) => {
-      if (client !== ws && client.readyState === WebSocket.OPEN) {
-        client.send(message);
-      }
-    });
+// Socket.io
+const users = {};
+io.on('connection', socket => {
+  socket.on('join', name => {
+    users[socket.id] = name;
+    // Send all the pianists that are connected
+    socket.emit('users', Object.values(users).filter(u => u !== null));
+    // Tell all the other users that a new one connected
+    socket.broadcast.emit('user_connected', name);
+  })
+  socket.on('piano', note => {
+    socket.broadcast.emit('piano', note);
+  });
+  socket.on('disconnect', () => {
+    socket.broadcast.emit('user_disconnected', users[socket.id]);
+    delete users[socket.id];
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`http/ws server listening on ${PORT}`);
-});
+http.listen(PORT, () => console.log(`http/ws server listening on ${PORT}`));

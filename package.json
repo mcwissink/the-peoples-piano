@@ -44,9 +44,9 @@
     "react": "^16.6.3",
     "react-dom": "^16.6.3",
     "react-router-dom": "^4.3.1",
+    "socket.io": "^2.2.0",
     "soundfont-player": "^0.11.0",
-    "webmidi": "^2.3.0",
-    "ws": "^6.1.2"
+    "webmidi": "^2.3.0"
   },
   "babel": {
     "presets": [

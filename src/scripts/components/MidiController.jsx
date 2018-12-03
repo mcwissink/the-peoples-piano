@@ -1,5 +1,6 @@
 import React from 'react';
 import WebMidi from 'webmidi';
+import io from 'socket.io-client';
 import Soundfont from 'soundfont-player';
 import {keyboardMapping, soundfonts} from '../util.js';
 
@@ -14,14 +15,32 @@ export class MidiController extends React.Component  {
       devices: [KEYBOARD_INPUT],
       device: "",
       soundfont: soundfonts[2],
+      users: [],
     };
-    // Create our websocket
-    this.socket = new WebSocket(window.location.href.replace(/^http/, "ws"), null, 10000, 10);
-    this.socket.onmessage = this.socketOnMessage;
+    // Create our socket
+    this.socket = new io.connect(window.location.href.replace(/^http/, "ws"));
+    this.socket.on('connect_error', e => console.log("error"));
+    this.socket.on('connect', e => console.log("socket.io connection open"));
+    // Join stuff with the socket so we can start broadcasting
+    this.socket.emit('join', prompt("Enter pianist name:"));
+    this.socket.on('users', users => this.setState({ users }));
+    this.socket.on('user_connected', user => {
+      // A new user joined so add them to the list of users
+      this.setState(prevState =>
+        ({ users: prevState.users.concat(user) })
+      );
+    });
+    this.socket.on('user_disconnected', user => {
+      // A user disconnected so remove them from the list of users
+      this.setState(prevState =>
+        ({ users: prevState.users.filter(u => u !== user) })
+      );
+    });
+    this.socket.on('piano', note => this.soundfont.play(note));
   }
 
   componentDidMount() {
-    // Initalize the WebMidi instance
+    // InitSetupalize the WebMidi instance
     WebMidi.enable(err => {
       if (err) {
         this.setState({ error: true });
@@ -31,7 +50,13 @@ export class MidiController extends React.Component  {
       }
     });
 
+    // Setup the soundfont
     this.setSoundfont(this.state.soundfont);
+  }
+
+  socketOnOpen = () => {
+    const name = prompt("Enter a username:");
+    this.socket.send(name);
   }
 
   socketOnMessage = message => {
@@ -96,7 +121,7 @@ export class MidiController extends React.Component  {
       // Play the sound locally
       this.soundfont.play(note);
       // Broadcast the note to other clients
-      this.socket.send(JSON.stringify({ note }));
+      this.socket.emit('piano', note);
     }
   }
 
@@ -126,18 +151,25 @@ export class MidiController extends React.Component  {
       loading,
       error,
       soundfont,
+      users,
     } = this.state;
     return (
-      <div onKeyPress={this.handleKeyPress}>
-        {error && <span>Web MIDI is not supported by this browser (try using Chrome)</span>}
-        <select value={device} onChange={this.handleDeviceSelect}>
-          <option value=""></option>
-          {this.state.devices.map(device => <option key={device} value={device}>{device}</option>)}
-        </select>
-        <select value={soundfont} onChange={this.handleSoundfonSelect}>
-          {soundfonts.map(sf => <option key={sf} value={sf}>{sf}</option>)}
-        </select>
-        {loading && <span> Loading...</span>}
+      <div>
+        <div onKeyPress={this.handleKeyPress}>
+          {error && <span>Web MIDI is not supported by this browser (try using Chrome)</span>}
+          <select value={device} onChange={this.handleDeviceSelect}>
+            <option value=""></option>
+            {this.state.devices.map(device => <option key={device} value={device}>{device}</option>)}
+          </select>
+          <select value={soundfont} onChange={this.handleSoundfonSelect}>
+            {soundfonts.map(sf => <option key={sf} value={sf}>{sf}</option>)}
+          </select>
+          {loading && <span> Loading...</span>}
+        </div>
+        <u><span>Users</span></u>
+        <div>
+          {users.map(user => <div>{user}</div>)}
+        </div>
       </div>
     );
   }
