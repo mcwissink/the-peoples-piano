@@ -184,7 +184,7 @@ export class MidiController extends React.Component  {
         </div>
         <u><span>Users</span></u>
         <div>
-          {users.map(user => <div>{user}</div>)}
+          {users.map(user => <div>{user.name}</div>)}
         </div>
       </div>
     );
