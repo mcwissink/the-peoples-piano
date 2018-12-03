@@ -39,6 +39,7 @@
     "webpack-dev-server": "^3.1.10"
   },
   "dependencies": {
+    "bad-words": "^3.0.0",
     "express": "^4.16.4",
     "http": "0.0.0",
     "react": "^16.6.3",

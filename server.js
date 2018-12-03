@@ -6,6 +6,9 @@ const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 
+const Filter = require('bad-words');
+const filter = new Filter({ placeHolder: 'x'});
+
 const APP_PATH = path.join(__dirname, 'dist');
 const PORT = process.env.PORT || 3000;
 
@@ -19,11 +22,11 @@ app.use('*', express.static(APP_PATH));
 const users = {};
 io.on('connection', socket => {
   socket.on('join', name => {
-    users[socket.id] = name;
+    users[socket.id] = filter.clean(name);
     // Send all the pianists that are connected
     socket.emit('users', Object.values(users).filter(u => u !== null));
     // Tell all the other users that a new one connected
-    socket.broadcast.emit('user_connected', name);
+    socket.broadcast.emit('user_connected', users[socket.id]);
   })
   socket.on('piano', note => {
     socket.broadcast.emit('piano', note);
