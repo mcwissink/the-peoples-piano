@@ -36,7 +36,14 @@ export class MidiController extends React.Component  {
         ({ users: prevState.users.filter(u => u !== user) })
       );
     });
-    this.socket.on('piano', note => this.soundfont.play(note));
+    this.socket.on('noteon', note => this.playNote(note));
+    this.socket.on('noteoff', note => this.stopNote(note));
+
+    // Create am audio AudioContext
+    this.ac = new AudioContext();
+
+    // Create a dictionary that stores active notes so we can stop them later
+    this.activeNotes = {};
   }
 
   componentDidMount() {
@@ -77,8 +84,6 @@ export class MidiController extends React.Component  {
     const device = e.target.value;
     this.setState({ device });
 
-    // Clean up an existing connections
-    this.removeExistingDevice();
     // The device could be a blank, so just don't do anything if we get that
     if (device !== "" && device !== KEYBOARD_INPUT) {
       this.setMidiDevice(device);
@@ -98,31 +103,43 @@ export class MidiController extends React.Component  {
     // Set soundfont and tell user we are loading
     this.setState({ soundfont, loading: true });
     // Initalize the Soundfont
-    Soundfont.instrument(new AudioContext(), soundfont).then(soundfont => {
+    Soundfont.instrument(this.ac, soundfont).then(soundfont => {
       // Set a reference to the sound font so we can call it later
       this.soundfont = soundfont;
       // We are done loading
       this.setState({ loading: false });
+      this.setMidiDevice(this.state.device);
     });
   }
 
   setMidiDevice = device => {
+    // Clean up an existing connections
+    this.removeExistingDevice();
     // Setup the input device
     this.input = WebMidi.getInputByName(device);
-    this.input.addListener("noteon", "all", e => this.playNote(e.note.number));
+    this.input.addListener("noteon", "all", e => {
+      const note = e.note.number;
+      this.playNote(note);
+      // Broadcast the note event to other clients
+      this.socket.emit('noteon', note);
+    });
 
     this.input.addListener("noteoff", "all", e => {
-
+      const note = e.note.number;
+      this.stopNote(note);
+      // Broadcast the note event to other clientscv
+      this.socket.emit('noteoff', note);
     });
   }
 
   playNote = note => {
-    if (this.soundfont !== undefined) {
-      // Play the sound locally
-      this.soundfont.play(note);
-      // Broadcast the note to other clients
-      this.socket.emit('piano', note);
-    }
+    // Play the sound locally and store a reference to the player
+    this.activeNotes[note] = this.soundfont.play(note);
+  }
+
+  stopNote = note => {
+    this.activeNotes[note].stop();
+    delete this.activeNotes[note];
   }
 
   removeExistingDevice() {
@@ -137,7 +154,6 @@ export class MidiController extends React.Component  {
       this.setState({ device: "" });
     } else {
       this.setState({ device: devices[0] });
-      this.setMidiDevice(devices[0]);
     }
     // Add the compute keyboard as an input optoin
     devices.push(KEYBOARD_INPUT);

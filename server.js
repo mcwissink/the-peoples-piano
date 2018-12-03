@@ -28,8 +28,11 @@ io.on('connection', socket => {
     // Tell all the other users that a new one connected
     socket.broadcast.emit('user_connected', users[socket.id]);
   })
-  socket.on('piano', note => {
-    socket.broadcast.emit('piano', note);
+  socket.on('noteon', note => {
+    socket.broadcast.emit('noteon', note);
+  });
+  socket.on('noteoff', note => {
+    socket.broadcast.emit('noteoff', note);
   });
   socket.on('disconnect', () => {
     socket.broadcast.emit('user_disconnected', users[socket.id]);
