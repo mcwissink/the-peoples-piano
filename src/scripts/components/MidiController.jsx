@@ -91,6 +91,7 @@ export class MidiController extends React.Component  {
   }
 
   handleKeyPress = e => {
+    e.stopPropagation()
     if (this.state.device === KEYBOARD_INPUT) {
       const note = keyboardMapping[e.key];
       if (note !== null) {
@@ -103,7 +104,7 @@ export class MidiController extends React.Component  {
     // Set soundfont and tell user we are loading
     this.setState({ soundfont, loading: true });
     // Initalize the Soundfont
-    Soundfont.instrument(this.ac, soundfont).then(soundfont => {
+    Soundfont.instrument(this.ac, soundfont, { adsr: [0.01, 0.1, 1, 100] }).then(soundfont => {
       // Set a reference to the sound font so we can call it later
       this.soundfont = soundfont;
       // We are done loading
@@ -134,7 +135,7 @@ export class MidiController extends React.Component  {
 
   playNote = note => {
     // Play the sound locally and store a reference to the player
-    this.activeNotes[note] = this.soundfont.play(note);
+    this.activeNotes[note] = this.soundfont.start(note);
   }
 
   stopNote = note => {
