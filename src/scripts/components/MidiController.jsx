@@ -3,9 +3,12 @@ import WebMidi from 'webmidi';
 import io from 'socket.io-client';
 import Soundfont from 'soundfont-player';
 import {keyboardMapping, soundfonts} from '../util.js';
+import {Pianist} from './Pianist.jsx';
+import {Piano} from './Piano.jsx';
 
 const KEYBOARD_INPUT = "computer keyboard";
 
+// Handles all the midi and sockets
 export class MidiController extends React.Component  {
   constructor (props) {
     super(props);
@@ -83,7 +86,8 @@ export class MidiController extends React.Component  {
   handleDeviceSelect = e => {
     const device = e.target.value;
     this.setState({ device });
-
+    // If blank is selected the midi controller should be removed
+    this.removeExistingDevice();
     // The device could be a blank, so just don't do anything if we get that
     if (device !== "" && device !== KEYBOARD_INPUT) {
       this.setMidiDevice(device);
@@ -91,7 +95,6 @@ export class MidiController extends React.Component  {
   }
 
   handleKeyPress = e => {
-    e.stopPropagation()
     if (this.state.device === KEYBOARD_INPUT) {
       const note = keyboardMapping[e.key];
       if (note !== null) {
@@ -139,8 +142,12 @@ export class MidiController extends React.Component  {
   }
 
   stopNote = note => {
-    this.activeNotes[note].stop();
-    delete this.activeNotes[note];
+    const player = this.activeNotes[note];
+    if (player !== undefined) {
+      player.stop();
+      // Free up memory, less work for garbage collection?
+      delete this.activeNotes[note];
+    }
   }
 
   removeExistingDevice() {
@@ -185,8 +192,9 @@ export class MidiController extends React.Component  {
         </div>
         <u><span>Users</span></u>
         <div>
-          {users.map(user => <div>{user.name}</div>)}
+          {users.map(user => <Pianist name={user.name}/>)}
         </div>
+        <Piano activeNotes={this.activeNotes}/>
       </div>
     );
   }

@@ -1,5 +1,6 @@
 import React from 'react';
 
+// Renders a Twitch chat
 export class TwitchChat extends React.Component {
   constructor(props) {
     super(props);
@@ -30,7 +31,6 @@ export class TwitchChat extends React.Component {
     const {
       height,
     } = this.state;
-    console.log(height);
     return (
       <iframe
         className="twitch-chat"
