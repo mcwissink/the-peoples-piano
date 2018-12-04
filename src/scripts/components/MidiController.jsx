@@ -45,7 +45,7 @@ export class MidiController extends React.Component  {
     // Create am audio AudioContext
     this.ac = new AudioContext();
 
-    // Create a dictionary that stores active notes so we can stop them later
+    // Create an object that stores active notes so we can stop them later
     this.activeNotes = {};
   }
 
@@ -86,20 +86,34 @@ export class MidiController extends React.Component  {
   handleDeviceSelect = e => {
     const device = e.target.value;
     this.setState({ device });
-    // If blank is selected the midi controller should be removed
-    this.removeExistingDevice();
+    // Just clear any existing input
+    this.removeExistingMidiDevice();
+    window.removeEventListener("keydown", this.handleKeyDown);
+    window.removeEventListener("keyup", this.handleKeyUp);
     // The device could be a blank, so just don't do anything if we get that
-    if (device !== "" && device !== KEYBOARD_INPUT) {
-      this.setMidiDevice(device);
+    if (device !== "") {
+      if (device === KEYBOARD_INPUT) {
+        window.addEventListener("keydown", this.handleKeyDown);
+        window.addEventListener("keyup", this.handleKeyUp);
+      } else {
+        this.setMidiDevice(device);
+      }
     }
   }
 
-  handleKeyPress = e => {
-    if (this.state.device === KEYBOARD_INPUT) {
-      const note = keyboardMapping[e.key];
-      if (note !== null) {
-        this.playNote(note);
-      }
+  handleKeyDown = e => {
+    const note = keyboardMapping[e.key];
+    // For some reason, this funtion is called multiple times while the key is pressed
+    // So just check if we have an active note already
+    if (note !== null && this.activeNotes[note] === undefined) {
+      this.playNote(note);
+    }
+  }
+
+  handleKeyUp = e => {
+    const note = keyboardMapping[e.key];
+    if (note !== null) {
+      this.stopNote(note);
     }
   }
 
@@ -118,7 +132,7 @@ export class MidiController extends React.Component  {
 
   setMidiDevice = device => {
     // Clean up an existing connections
-    this.removeExistingDevice();
+    this.removeExistingMidiDevice();
     // Setup the input device
     this.input = WebMidi.getInputByName(device);
     this.input.addListener("noteon", "all", e => {
@@ -150,7 +164,7 @@ export class MidiController extends React.Component  {
     }
   }
 
-  removeExistingDevice() {
+  removeExistingMidiDevice() {
     if (this.input) {
       this.input.removeListener();
     }
@@ -179,7 +193,7 @@ export class MidiController extends React.Component  {
     } = this.state;
     return (
       <div>
-        <div onKeyPress={this.handleKeyPress}>
+        <div>
           {error && <span>Web MIDI is not supported by this browser (try using Chrome)</span>}
           <select value={device} onChange={this.handleDeviceSelect}>
             <option value=""></option>
