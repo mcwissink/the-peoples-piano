@@ -194,11 +194,14 @@ export class MidiController extends React.Component  {
     return (
       <div>
         <div>
-          {error && <span>Web MIDI is not supported by this browser (try using Chrome)</span>}
+          {error && <div>Web MIDI is not supported by this browser (try using Chrome)</div>}
+          <span>Input: </span>
           <select value={device} onChange={this.handleDeviceSelect}>
             <option value=""></option>
             {this.state.devices.map(device => <option key={device} value={device}>{device}</option>)}
           </select>
+          <br/>
+          <span>Sound: </span>
           <select value={soundfont} onChange={this.handleSoundfonSelect}>
             {soundfonts.map(sf => <option key={sf} value={sf}>{sf}</option>)}
           </select>
