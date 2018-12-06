@@ -53,6 +53,7 @@ export class Piano extends React.Component {
 
   update(dt) {
     this.graphics.clear();
+    this.graphicsBlackKeys.clear();
     this.drawPiano(dt);
     this.drawNotes(dt);
   }
