@@ -19,7 +19,7 @@ class Note {
   }
 
   update(dt) {
-    this.y -= dt;
+    this.y--;
   }
 }
 
@@ -91,7 +91,7 @@ export class Piano extends React.Component {
           if (this.activeDrawNotes[i] === undefined) {
             this.activeDrawNotes[i] = new Note(x, this.topOfKeyboard, KEY_WIDTH, 1);
           } else {
-            this.activeDrawNotes[i].height += dt;
+            this.activeDrawNotes[i].height++;
           }
         } else {
           if (this.activeDrawNotes[i] !== undefined) {
@@ -110,7 +110,7 @@ export class Piano extends React.Component {
             this.activeDrawNotes[i] = new Note(x, this.topOfKeyboard, KEY_WIDTH*0.8, 1);
           } else {
             // update the active note
-            this.activeDrawNotes[i].height += dt;
+            this.activeDrawNotes[i].height++;
           }
         } else {
           if (this.activeDrawNotes[i] !== undefined) {
