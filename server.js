@@ -22,14 +22,12 @@ app.use('*', express.static(APP_PATH));
 const users = {};
 io.on('connection', socket => {
   socket.on('join', name => {
-    users[socket.id] = filter.clean(name);
+    users[socket.id] = {
+      name: filter.clean(name),
+      id: socket.id,
+    };
     // Send all the pianists that are connected
-    socket.emit('users', Object.keys(users).map(userId => {
-      return {
-        name: users[userId],
-        id: userId,
-      }
-    }));
+    socket.emit('users', Object.values(users));
     // Tell all the other users that a new one connected
     socket.broadcast.emit('user_connected', users[socket.id]);
   })

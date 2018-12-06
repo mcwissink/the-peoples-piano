@@ -26,18 +26,18 @@ export class MidiController extends React.Component  {
     this.socket.on('connect', e => console.log("socket.io connection open"));
     // Join stuff with the socket so we can start broadcasting
     this.socket.emit('join', prompt("Enter pianist name:"));
-    this.socket.on('users', users => this.setState({ users }));
+    this.socket.on('users', users => {
+      this.setState({ users })
+    });
     this.socket.on('user_connected', user => {
+      console.log(`Added user: ${user.name}`);
       // A new user joined so add them to the list of users
-      this.setState(prevState =>
-        ({ users: prevState.users.concat(user) })
-      );
+      this.setState(prevState => ({ users: prevState.users.concat(user) }));
     });
     this.socket.on('user_disconnected', user => {
+      console.log(`Removed user: ${user.name}`);
       // A user disconnected so remove them from the list of users
-      this.setState(prevState =>
-        ({ users: prevState.users.filter(u => u !== user) })
-      );
+      this.setState(prevState => ({ users: prevState.users.filter(u => u.id !== user.id) }));
     });
     this.socket.on('noteon', note => this.playNote(note));
     this.socket.on('noteoff', note => this.stopNote(note));
@@ -126,7 +126,6 @@ export class MidiController extends React.Component  {
       this.soundfont = soundfont;
       // We are done loading
       this.setState({ loading: false });
-      this.setMidiDevice(this.state.device);
     });
   }
 
