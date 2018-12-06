@@ -48,7 +48,7 @@ export class Piano extends React.Component {
     const ctx = canvas.getContext('2d');
     const gradient = ctx.createLinearGradient(0, 0, 0, gradientHeight);
     gradient.addColorStop(0.1, "#ffffff");
-    gradient.addColorStop(1, "rgba(0,0,0,0)");
+    gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, gradientWidth, gradientHeight);
     var sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(canvas));
