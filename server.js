@@ -23,7 +23,7 @@ const users = {};
 io.on('connection', socket => {
   socket.on('join', name => {
     users[socket.id] = {
-      name: filter.clean(name),
+      name: name === null ? 'Beethoven' : filter.clean(name),
       id: socket.id,
     };
     // Send all the pianists that are connected

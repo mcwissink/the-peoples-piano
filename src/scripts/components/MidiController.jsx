@@ -107,6 +107,8 @@ export class MidiController extends React.Component  {
     // So just check if we have an active note already
     if (note !== null && this.activeNotes[note] === undefined) {
       this.playNote(note);
+      // Broadcast the note event to other clients
+      this.socket.emit('noteon', note);
     }
   }
 
@@ -114,6 +116,8 @@ export class MidiController extends React.Component  {
     const note = keyboardMapping[e.key];
     if (note !== null) {
       this.stopNote(note);
+      // Broadcast the note event to other clientscv
+      this.socket.emit('noteoff', note);
     }
   }
 

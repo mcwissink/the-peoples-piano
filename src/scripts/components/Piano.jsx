@@ -18,8 +18,8 @@ class Note {
     graphics.endFill();
   }
 
-  update() {
-    this.y--;
+  update(dt) {
+    this.y -= dt;
   }
 }
 
@@ -53,11 +53,11 @@ export class Piano extends React.Component {
 
   update(dt) {
     this.graphics.clear();
-    this.drawPiano();
-    this.drawNotes();
+    this.drawPiano(dt);
+    this.drawNotes(dt);
   }
 
-  drawNotes() {
+  drawNotes(dt) {
     for (const activeDrawNote of Object.values(this.activeDrawNotes)) {
       activeDrawNote.draw(this.graphics);
       activeDrawNote.update();
@@ -65,15 +65,15 @@ export class Piano extends React.Component {
     for (const i in this.pastDrawNotes) {
       const pastDrawNote = this.pastDrawNotes[i];
       pastDrawNote.draw(this.graphics);
-      pastDrawNote.update();
+      pastDrawNote.update(dt);
       // Remove the note once it is out of sight
-      if (pastDrawNote.y + pastDrawNote.height < - 10) {
+      if (pastDrawNote.y + pastDrawNote.height < -10) {
         this.pastDrawNotes.splice(i, 1);
       }
     }
   }
 
-  drawPiano() {
+  drawPiano(dt) {
     let blackNotePosition = 0;
     let whiteNotePosition = 0;
     for (let i = 1; i <= 88; i++) {
@@ -91,7 +91,7 @@ export class Piano extends React.Component {
           if (this.activeDrawNotes[i] === undefined) {
             this.activeDrawNotes[i] = new Note(x, this.topOfKeyboard, KEY_WIDTH, 1);
           } else {
-            this.activeDrawNotes[i].height++;
+            this.activeDrawNotes[i].height += dt;
           }
         } else {
           if (this.activeDrawNotes[i] !== undefined) {
@@ -110,7 +110,7 @@ export class Piano extends React.Component {
             this.activeDrawNotes[i] = new Note(x, this.topOfKeyboard, KEY_WIDTH*0.8, 1);
           } else {
             // update the active note
-            this.activeDrawNotes[i].height++;
+            this.activeDrawNotes[i].height += dt;
           }
         } else {
           if (this.activeDrawNotes[i] !== undefined) {
