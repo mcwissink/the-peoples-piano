@@ -171,11 +171,11 @@ export class MidiController extends React.Component  {
 
   updateDevices() {
     let devices = WebMidi.inputs.map(input => input.name);
-    if (devices.length === 0) {
-      this.setState({ device: "" });
-    } else {
-      this.setState({ device: devices[0] });
-    }
+    // if (devices.length === 0) {
+    //   this.setState({ device: "" });
+    // } else {
+    //   this.setState({ device: devices[0] });
+    // }
     // Add the compute keyboard as an input optoin
     devices.push(KEYBOARD_INPUT);
     this.setState({ devices });
@@ -192,6 +192,7 @@ export class MidiController extends React.Component  {
     } = this.state;
     return (
       <div>
+        <Piano activeNotes={this.activeNotes}/>
         <div>
           {error && <div>Web MIDI is not supported by this browser (try using Chrome)</div>}
           <span>Input: </span>
@@ -210,7 +211,6 @@ export class MidiController extends React.Component  {
         <div>
           {users.map(user => <Pianist name={user.name}/>)}
         </div>
-        <Piano activeNotes={this.activeNotes}/>
       </div>
     );
   }
