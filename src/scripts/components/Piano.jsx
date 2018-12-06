@@ -31,12 +31,29 @@ export class Piano extends React.Component {
       height: 500,
       view: this.canvas,
       backgroundColor : 0xffffff,
+      forceCanvas: true,
     });
     this.graphics = new PIXI.Graphics();
     // We need to declare a new graphics object for proper layering
     this.graphicsBlackKeys = new PIXI.Graphics();
     this.pixi.stage.addChild(this.graphics);
     this.pixi.stage.addChild(this.graphicsBlackKeys);
+
+    // Create a linear gradient so our notes fade out on the top of the screen
+    const gradientWidth = this.pixi.renderer.width;
+    const gradientHeight = 150;
+    const canvas = document.createElement('canvas');
+    canvas.width = gradientWidth;
+    canvas.height = gradientHeight;
+    const ctx = canvas.getContext('2d');
+    const gradient = ctx.createLinearGradient(0, 0, 0, gradientHeight);
+    gradient.addColorStop(0.1, "#ffffff");
+    gradient.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, gradientWidth, gradientHeight);
+    var sprite = new PIXI.Sprite(PIXI.Texture.fromCanvas(canvas));
+    this.pixi.stage.addChild(sprite);
+
     this.pixi.ticker.add(this.update, this);
 
     // activeDrawNotes remembers which notes to actively update when a key is pressed
