@@ -12,6 +12,10 @@ const filter = new Filter({ placeHolder: 'x'});
 const APP_PATH = path.join(__dirname, 'dist');
 const PORT = process.env.PORT || 3000;
 
+const randomColor = () => {
+    return Math.floor(Math.random()*16777215);
+};
+
 // Express server
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
@@ -25,6 +29,7 @@ io.on('connection', socket => {
     users[socket.id] = {
       name: name === null ? 'Beethoven' : filter.clean(name),
       id: socket.id,
+      color: randomColor();
     };
     // Send all the pianists that are connected
     socket.emit('users', Object.values(users));
