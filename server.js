@@ -29,7 +29,7 @@ io.on('connection', socket => {
     users[socket.id] = {
       name: name === null ? 'Beethoven' : filter.clean(name),
       id: socket.id,
-      color: randomColor();
+      color: randomColor(),
     };
     // Send all the pianists that are connected
     socket.emit('users', Object.values(users));
@@ -37,10 +37,10 @@ io.on('connection', socket => {
     socket.broadcast.emit('user_connected', users[socket.id]);
   })
   socket.on('noteon', note => {
-    socket.broadcast.emit('noteon', note);
+    socket.broadcast.emit('noteon', { note, id: socket.id });
   });
   socket.on('noteoff', note => {
-    socket.broadcast.emit('noteoff', note);
+    socket.broadcast.emit('noteoff', { note, id: socket.id });
   });
   socket.on('disconnect', () => {
     socket.broadcast.emit('user_disconnected', users[socket.id]);

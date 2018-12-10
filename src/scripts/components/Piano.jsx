@@ -6,14 +6,15 @@ const KEY_HEIGHT = 150;
 const BLACK_KEYS = [0, 2, 5, 7, 10];
 
 class Note {
-  constructor(x, y, width, height) {
+  constructor(x, y, width, height, color) {
     this.x = x,
     this.y = y,
     this.width = width;
-    this.height = height
+    this.height = height;
+    this.color = color;
   }
   draw(graphics) {
-    graphics.beginFill(0xff0000);
+    graphics.beginFill(this.color);
     graphics.drawRect(this.x, this.y, this.width, this.height);
     graphics.endFill();
   }
@@ -97,17 +98,17 @@ export class Piano extends React.Component {
     for (let i = 1; i <= 88; i++) {
       // Add 20 because of midi's mapping to real piano
       // http://www.inspiredacoustics.com/en/MIDI_note_numbers_and_center_frequencies
-      const active = this.props.activeNotes[i + 20] !== undefined;
+      const note = this.props.activeNotes[i + 20];
       const keyInOctave = i % 12;
       // Weird math trickery to draw the piano... It's not perfect since the white keys are drawn over parts of the black keys
       if (BLACK_KEYS.indexOf(keyInOctave) === -1) {
         const x = whiteNotePosition * KEY_WIDTH;
-        this.drawWhiteKey(x, this.topOfKeyboard, active);
+        this.drawWhiteKey(x, this.topOfKeyboard, note);
         whiteNotePosition++;
         // Handle drawing the notes
-        if (active) {
+        if (note !== undefined) {
           if (this.activeDrawNotes[i] === undefined) {
-            this.activeDrawNotes[i] = new Note(x, this.topOfKeyboard, KEY_WIDTH, 1);
+            this.activeDrawNotes[i] = new Note(x, this.topOfKeyboard, KEY_WIDTH, 1, note.color);
           } else {
             this.activeDrawNotes[i].height++;
           }
@@ -119,13 +120,13 @@ export class Piano extends React.Component {
         }
       } else {
         const x = (blackNotePosition * KEY_WIDTH) + (KEY_WIDTH/2)
-        this.drawBlackKey(x, this.topOfKeyboard, active);
+        this.drawBlackKey(x, this.topOfKeyboard, note);
         blackNotePosition += (keyInOctave === 2 || keyInOctave === 7) ? 2 : 1;
         // Handle drawing the notes
-        if (active) {
+        if (note !== undefined) {
           if (this.activeDrawNotes[i] === undefined) {
             // No active note so create one
-            this.activeDrawNotes[i] = new Note(x, this.topOfKeyboard, KEY_WIDTH*0.8, 1);
+            this.activeDrawNotes[i] = new Note(x, this.topOfKeyboard, KEY_WIDTH*0.8, 1, note.color);
           } else {
             // update the active note
             this.activeDrawNotes[i].height++;
@@ -141,16 +142,16 @@ export class Piano extends React.Component {
     }
   }
 
-  drawBlackKey(x, y, active) {
-    const fillColor = active ? 0xff0000 : 0x000000;
+  drawBlackKey(x, y, note) {
+    const fillColor = note !== undefined ? note.color : 0x000000;
     this.graphicsBlackKeys.beginFill(fillColor);
     this.graphicsBlackKeys.lineStyle(1, 0x000000);
     this.graphicsBlackKeys.drawRect(x, y, KEY_WIDTH*0.8, KEY_HEIGHT*0.65);
     this.graphicsBlackKeys.endFill();
   }
 
-  drawWhiteKey(x, y, active) {
-    const fillColor = active ? 0xff0000 : 0xffffff;
+  drawWhiteKey(x, y, note) {
+    const fillColor = note !== undefined ? note.color : 0xffffff;
     this.graphics.beginFill(fillColor);
     this.graphics.lineStyle(1, 0x000000);
     this.graphics.drawRect(x, y, KEY_WIDTH, KEY_HEIGHT);

@@ -39,8 +39,8 @@ export class MidiController extends React.Component  {
       // A user disconnected so remove them from the list of users
       this.setState(prevState => ({ users: prevState.users.filter(u => u.id !== user.id) }));
     });
-    this.socket.on('noteon', note => this.playNote(note));
-    this.socket.on('noteoff', note => this.stopNote(note));
+    this.socket.on('noteon', data => this.playNote(data.note, data.id));
+    this.socket.on('noteoff', data => this.stopNote(date.note, data.id));
 
     // Create am audio AudioContext
     this.ac = new AudioContext();
@@ -67,14 +67,6 @@ export class MidiController extends React.Component  {
   socketOnOpen = () => {
     const name = prompt("Enter a username:");
     this.socket.send(name);
-  }
-
-  socketOnMessage = message => {
-    // Make sure we have a soundfont initalized
-    if (this.soundfont) {
-      // Play the sound sent from the server
-      this.soundfont.play(JSON.parse(message.data).note);
-    }
   }
 
   handleSoundfonSelect = e => {
@@ -106,7 +98,7 @@ export class MidiController extends React.Component  {
     // For some reason, this funtion is called multiple times while the key is pressed
     // So just check if we have an active note already
     if (note !== null && this.activeNotes[note] === undefined) {
-      this.playNote(note);
+      this.playNote(note, this.socket.id);
       // Broadcast the note event to other clients
       this.socket.emit('noteon', note);
     }
@@ -115,7 +107,7 @@ export class MidiController extends React.Component  {
   handleKeyUp = e => {
     const note = keyboardMapping[e.key];
     if (note !== null) {
-      this.stopNote(note);
+      this.stopNote(note, this.socket.id);
       // Broadcast the note event to other clientscv
       this.socket.emit('noteoff', note);
     }
@@ -140,28 +132,30 @@ export class MidiController extends React.Component  {
     this.input = WebMidi.getInputByName(device);
     this.input.addListener("noteon", "all", e => {
       const note = e.note.number;
-      this.playNote(note);
+      this.playNote(note, this.socket.id);
       // Broadcast the note event to other clients
       this.socket.emit('noteon', note);
     });
 
     this.input.addListener("noteoff", "all", e => {
       const note = e.note.number;
-      this.stopNote(note);
+      this.stopNote(note, this.socket.id);
       // Broadcast the note event to other clientscv
       this.socket.emit('noteoff', note);
     });
   }
 
-  playNote = note => {
+  // Play the note from a user, specified by their id
+  playNote = (note, id) => {
     // Play the sound locally and store a reference to the player
-    this.activeNotes[note] = this.soundfont.start(note);
+    this.activeNotes[note] = { player: this.soundfont.start(note), color: this.state.users.find(u => u.id === id).color };
   }
 
-  stopNote = note => {
-    const player = this.activeNotes[note];
-    if (player !== undefined) {
-      player.stop();
+  // Stop the note from a user, specified by their id
+  stopNote = (note, id) => {
+    const activeNote = this.activeNotes[note];
+    if (activeNote !== undefined) {
+      activeNote.player.stop();
       // Free up memory, less work for garbage collection?
       delete this.activeNotes[note];
     }
