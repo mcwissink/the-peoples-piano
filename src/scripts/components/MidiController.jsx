@@ -40,7 +40,7 @@ export class MidiController extends React.Component  {
       this.setState(prevState => ({ users: prevState.users.filter(u => u.id !== user.id) }));
     });
     this.socket.on('noteon', data => this.playNote(data.note, data.id));
-    this.socket.on('noteoff', data => this.stopNote(date.note, data.id));
+    this.socket.on('noteoff', data => this.stopNote(data.note, data.id));
 
     // Create am audio AudioContext
     this.ac = new AudioContext();
