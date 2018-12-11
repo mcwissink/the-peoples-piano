@@ -207,7 +207,7 @@ export class MidiController extends React.Component  {
         </div>
         <u><span>Users</span></u>
         <div>
-          {users.map(user => <Pianist name={user.name}/>)}
+          {users.map(user => <Pianist socket={this.socket} name={user.name} upvotes={user.upvotes}/>)}
         </div>
       </div>
     );
