@@ -56,6 +56,26 @@ const users = {};
 		// Tell all the other users that a new one connected
 		socket.broadcast.emit('user_connected', users[socket.id]);
 	})
+	socket.on('upvote', name => {
+		
+		db.collection("piano_users").updateOne (
+			{ name : name }, 
+			{ $inc : { upvotes : 1 } }
+		)
+		
+		socket.broadcast.emit('upvoted', users[socket.id]);
+
+	});
+	socket.on('downvote', name => {
+		
+		db.collection("piano_users").updateOne (
+			{ name : name }, 
+			{ $inc : { upvotes : -1 } }
+		)
+		
+		socket.broadcast.emit('downvoted', users[socket.id]);
+
+	});	
 	socket.on('noteon', note => {
 		socket.broadcast.emit('noteon', { note, id: socket.id });
 	});
