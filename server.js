@@ -42,19 +42,18 @@ const users = {};
 		)
 		
 		db.collection("piano_users").findOne( { name : name } ).then((user) => {
-			console.log(user.name);
-			console.log(user.upvotes);
+
 			users[socket.id] = {
 				name: user.name,
 				upvotes: user.upvotes,
 				id: socket.id,
 			};
+
+			// Send all the pianists that are connected
+			socket.emit('users', Object.values(users));
+			// Tell all the other users that a new one connected
+			socket.broadcast.emit('user_connected', users[socket.id]);
 		});
-		
-		// Send all the pianists that are connected
-		socket.emit('users', Object.values(users));
-		// Tell all the other users that a new one connected
-		socket.broadcast.emit('user_connected', users[socket.id]);
 	})
 	socket.on('upvote', name => {
 		
