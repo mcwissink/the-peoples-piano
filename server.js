@@ -29,22 +29,23 @@ app.use('*', express.static(APP_PATH));
 const users = {};
 	io.on('connection', socket => {
 	socket.on('join', name => {
-		
+
 		if (name === null) {
 			return;
 		}
 		// update if name in DB or insert if not
-		db.collection("piano_users").updateOne ( 
-			{ name : name }, 
+		db.collection("piano_users").updateOne (
+			{ name : name },
 			{ $setOnInsert: { name: name, upvotes: 0} },
 			//create field but dont set it?
-			{ upsert : true } 
+			{ upsert : true }
 		)
-		
+
 		db.collection("piano_users").findOne( { name : name } ).then((user) => {
 
 			users[socket.id] = {
 				name: user.name,
+        color: randomColor(),
 				upvotes: user.upvotes,
 				id: socket.id,
 			};
@@ -56,25 +57,25 @@ const users = {};
 		});
 	})
 	socket.on('upvote', name => {
-		
+
 		db.collection("piano_users").updateOne (
-			{ name : name }, 
+			{ name : name },
 			{ $inc : { upvotes : 1 } }
 		)
-		
+
 		socket.broadcast.emit('upvoted', users[socket.id]);
 
 	});
 	socket.on('downvote', name => {
-		
+
 		db.collection("piano_users").updateOne (
-			{ name : name }, 
+			{ name : name },
 			{ $inc : { upvotes : -1 } }
 		)
-		
+
 		socket.broadcast.emit('downvoted', users[socket.id]);
 
-	});	
+	});
 	socket.on('noteon', note => {
 		socket.broadcast.emit('noteon', { note, id: socket.id });
 	});
