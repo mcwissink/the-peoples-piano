@@ -5,9 +5,8 @@ const express  = require('express');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-var MongoClient = require('mongodb').MongoClient
-var randomColor = require('randomcolor');
-var assert = require('assert');
+const MongoClient = require('mongodb').MongoClient
+const randomColor = require('randomcolor');
 
 // Chat filter library
 const Filter = require('bad-words');
