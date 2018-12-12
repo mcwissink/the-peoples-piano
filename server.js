@@ -91,6 +91,6 @@ MongoClient.connect(mongoURL, function(err, dbConnection) {
 		throw err;
 	}
 	db = dbConnection;
-});
 
-http.listen(PORT, () => console.log(`http/ws server listening on ${PORT}`));
+  http.listen(PORT, () => console.log(`http/ws server listening on ${PORT}`));
+});

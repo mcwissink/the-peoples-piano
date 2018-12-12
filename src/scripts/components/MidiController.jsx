@@ -22,7 +22,7 @@ export class MidiController extends React.Component  {
       users: [],
     };
     // Create our socket
-    this.socket = new io.connect("ws://" + window.location.host);
+    this.socket = new io.connect(window.location.href.replace(/^http/, "ws"));
     this.socket.on('connect_error', e => console.log("error"));
     this.socket.on('connect', e => console.log("socket.io connection open"));
     this.socket.on('users', users => {

@@ -3,7 +3,7 @@ import React, {Component} from 'react';
 
 export class Login extends Component {
 
-  login = () => {
+  join = () => {
     if(this.props.username !== ""){
       this.props.history.push("/");
     }
@@ -17,7 +17,7 @@ export class Login extends Component {
           <h4>Login</h4>
           <label>Username</label>
           <input type="text" name="username" placeholder="Username" onChange={this.props.handleUserNameChange}/>
-          <input type="submit" className="button success" value="Login" onClick={this.login}/>
+          <input type="submit" className="button success" value="Join" onClick={this.join}/>
         </div>
       </div>
     );
