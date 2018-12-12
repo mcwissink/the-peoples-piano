@@ -8,16 +8,13 @@ const io = require('socket.io')(http);
 const MongoClient = require('mongodb').MongoClient
 const randomColor = require('randomcolor');
 
+let db;
 // Chat filter library
 const Filter = require('bad-words');
 const filter = new Filter({ placeHolder: 'x'});
 
 const APP_PATH = path.join(__dirname, 'dist');
 const PORT = process.env.PORT || 3000;
-
-const makeRandomColor = () => {
-    return Math.floor(Math.random()*16777215);
-};
 
 // Express server
 app.use(bodyParser.json());
@@ -94,6 +91,6 @@ MongoClient.connect(mongoURL, function(err, dbConnection) {
 		throw err;
 	}
 	db = dbConnection;
-
-  http.listen(PORT, () => console.log(`http/ws server listening on ${PORT}`));
 });
+
+http.listen(PORT, () => console.log(`http/ws server listening on ${PORT}`));
