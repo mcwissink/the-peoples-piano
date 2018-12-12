@@ -44,6 +44,7 @@
     "http": "0.0.0",
     "mongodb": "^2.2.11",
     "pixi.js": "^4.8.2",
+    "randomcolor": "^0.5.3",
     "react": "^16.6.3",
     "react-dom": "^16.6.3",
     "react-router-dom": "^4.3.1",
