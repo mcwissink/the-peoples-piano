@@ -25,7 +25,8 @@ export class MidiController extends React.Component  {
     this.socket.on('connect_error', e => console.log("error"));
     this.socket.on('connect', e => console.log("socket.io connection open"));
     // Join stuff with the socket so we can start broadcasting
-    this.socket.emit('join', prompt("Enter pianist name:"));
+    console.log(props.username);
+    this.socket.emit('join', props.username);
     this.socket.on('users', users => {
       this.setState({ users })
     });

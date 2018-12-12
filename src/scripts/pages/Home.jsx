@@ -7,7 +7,7 @@ export class Home extends React.Component {
     return (
       <div>
         <div>
-          <MidiController/>
+          <MidiController username={this.props.username}/>
         </div>
         <TwitchChat/>
       </div>
