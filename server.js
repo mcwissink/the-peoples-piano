@@ -45,14 +45,13 @@ const users = {};
 
 			users[socket.id] = {
 				name: user.name,
-				color: randomColor( { format: 'rgb' } ),
+				color: randomColor({ luminosity: 'light' }),
 				upvotes: user.upvotes,
 				id: socket.id,
 			};
-			console.log(users[socket.id].color)
 
 			// Send all the pianists that are connected
-			socket.emit('users', Object.values(users));
+			socket.emit('users', Object.values(users);
 			// Tell all the other users that a new one connected
 			socket.broadcast.emit('user_connected', users[socket.id]);
 		});
@@ -102,4 +101,4 @@ MongoClient.connect(mongoURL, function(err, dbConnection) {
 	});
 });
 
-http.listen(PORT, () => console.log(`http/ws server listening on ${PORT}`));
+http.listen(PORT, () => console.log(`http/ws server listening on ${app.get('port')}`));

@@ -5,6 +5,7 @@ import Soundfont from 'soundfont-player';
 import {keyboardMapping, soundfonts} from '../util.js';
 import {Pianist} from './Pianist.jsx';
 import {Piano} from './Piano.jsx';
+import * as PIXI from 'pixi.js';
 
 const KEYBOARD_INPUT = "computer keyboard";
 
@@ -98,7 +99,7 @@ export class MidiController extends React.Component  {
     const note = keyboardMapping[e.key];
     // For some reason, this funtion is called multiple times while the key is pressed
     // So just check if we have an active note already
-    if (note !== null && this.activeNotes[note] === undefined) {
+    if (note !== undefined && this.activeNotes[note] === undefined) {
       this.playNote(note, this.socket.id);
       // Broadcast the note event to other clients
       this.socket.emit('noteon', note);
@@ -107,7 +108,7 @@ export class MidiController extends React.Component  {
 
   handleKeyUp = e => {
     const note = keyboardMapping[e.key];
-    if (note !== null) {
+    if (note !== undefined) {
       this.stopNote(note, this.socket.id);
       // Broadcast the note event to other clientscv
       this.socket.emit('noteoff', note);
@@ -149,7 +150,7 @@ export class MidiController extends React.Component  {
   // Play the note from a user, specified by their id
   playNote = (note, id) => {
     // Play the sound locally and store a reference to the player
-    this.activeNotes[note] = { player: this.soundfont.start(note), color: this.state.users.find(u => u.id === id).color };
+    this.activeNotes[note] = { player: this.soundfont.start(note), color: parseInt(this.state.users.find(u => u.id === id).color.replace(/\#/, '0x'), 16) };
   }
 
   // Stop the note from a user, specified by their id

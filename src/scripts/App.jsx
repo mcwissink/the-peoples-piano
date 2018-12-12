@@ -19,10 +19,7 @@ export class App extends React.Component {
     return (
       <BrowserRouter>
         <Switch>
-          <Route path="/piano" render={() =>
-              <Home
-                  username={this.state.username}/>
-              }/>
+          <Route path="/piano" render={() => <Home username={this.state.username}/>}/>
           <Route path="/" render={({ history }) =>
               <Login
                 handleUserNameChange={this.handleUserNameChange}
@@ -30,7 +27,6 @@ export class App extends React.Component {
                 history={history}
               />
             }/>
-
         </Switch>
       </BrowserRouter>
     );
