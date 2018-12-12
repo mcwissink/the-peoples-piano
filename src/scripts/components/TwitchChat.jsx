@@ -37,7 +37,7 @@ export class TwitchChat extends React.Component {
         frameBorder="0"
         scrolling="no"
         id="chat_embed"
-        src="https://www.twitch.tv/embed/hebo/chat"
+        src="https://www.twitch.tv/embed/akc97/chat"
         height={height}
         width="350">
       </iframe>
