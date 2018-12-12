@@ -5,7 +5,7 @@ export class Login extends Component {
 
   login = () => {
     if(this.props.username !== ""){
-      this.props.history.push("/piano")
+      this.props.history.push("/");
     }
   }
 

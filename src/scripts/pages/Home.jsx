@@ -6,7 +6,7 @@ import { Redirect } from 'react-router'
 export class Home extends React.Component {
   render() {
     if (this.props.username === '') {
-      return <Redirect to='/'/>;
+      return <Redirect to='/welcome'/>;
     }
     return (
       <div>
