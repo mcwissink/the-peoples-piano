@@ -29,7 +29,6 @@ app.use('*', express.static(APP_PATH));
 const users = {};
 	io.on('connection', socket => {
 	socket.on('join', name => {
-
 		if (name === null) {
 			return;
 		}

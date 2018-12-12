@@ -21,12 +21,9 @@ export class MidiController extends React.Component  {
       users: [],
     };
     // Create our socket
-    this.socket = new io.connect(window.location.href.replace(/^http/, "ws"));
+    this.socket = new io.connect("ws://" + window.location.host);
     this.socket.on('connect_error', e => console.log("error"));
     this.socket.on('connect', e => console.log("socket.io connection open"));
-    // Join stuff with the socket so we can start broadcasting
-    console.log(props.username);
-    this.socket.emit('join', props.username);
     this.socket.on('users', users => {
       this.setState({ users })
     });
@@ -48,6 +45,9 @@ export class MidiController extends React.Component  {
 
     // Create an object that stores active notes so we can stop them later
     this.activeNotes = {};
+
+    // Join stuff with the socket so we can start broadcasting
+    this.socket.emit('join', props.username);
   }
 
   componentDidMount() {

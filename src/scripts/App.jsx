@@ -12,7 +12,6 @@ export class App extends React.Component {
   }
 
   handleUserNameChange = e => {
-    console.log(e.target.value);
     this.setState({ username: e.target.value });
   }
 
