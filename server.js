@@ -50,7 +50,7 @@ const users = {};
 			};
 
 			// Send all the pianists that are connected
-			socket.emit('users', Object.values(users);
+			socket.emit('users', Object.values(users));
 			// Tell all the other users that a new one connected
 			socket.broadcast.emit('user_connected', users[socket.id]);
 		});
