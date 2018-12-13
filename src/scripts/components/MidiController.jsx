@@ -78,7 +78,10 @@ export class MidiController extends React.Component  {
   }
 
   handleDeviceSelect = e => {
-    const device = e.target.value;
+    this.setDevice(e.target.value);
+  }
+
+  setDevice(device) {
     this.setState({ device });
     // Just clear any existing input
     this.removeExistingMidiDevice();
@@ -116,15 +119,21 @@ export class MidiController extends React.Component  {
   }
 
   setSoundfont = soundfont => {
-    // Set soundfont and tell user we are loading
-    this.setState({ soundfont, loading: true });
-    // Initalize the Soundfont
-    Soundfont.instrument(this.ac, soundfont, { adsr: [0.01, 0.1, 1, 100] }).then(soundfont => {
-      // Set a reference to the sound font so we can call it later
-      this.soundfont = soundfont;
-      // We are done loading
-      this.setState({ loading: false });
-    });
+    // Only load one soundfont at a time
+    if (!this.state.loading) {
+      // Set soundfont and tell user we are loading
+      this.setState({ soundfont, loading: true });
+      // Initalize the Soundfont
+      Soundfont.instrument(this.ac, soundfont, { adsr: [0.01, 0.1, 1, 100] }).then(soundfont => {
+        if (this.state.device === '') {
+          this.setDevice(this.state.devices[0]);
+        }
+        // Set a reference to the sound font so we can call it later
+        this.soundfont = soundfont;
+        // We are done loading
+        this.setState({ loading: false });
+      });
+    }
   }
 
   setMidiDevice = device => {
@@ -149,8 +158,14 @@ export class MidiController extends React.Component  {
 
   // Play the note from a user, specified by their id
   playNote = (note, id) => {
-    // Play the sound locally and store a reference to the player
-    this.activeNotes[note] = { player: this.soundfont.start(note), color: parseInt(this.state.users.find(u => u.id === id).color.replace(/\#/, '0x'), 16) };
+    // Loading soundfont is async so make sure it exists before accessing it
+    if (this.soundfont !== undefined) {
+      // Play the sound locally and store a reference to the player
+      this.activeNotes[note] = {
+        player: this.soundfont.start(note),
+        color: parseInt(this.state.users.find(u => u.id === id).color.replace(/\#/, '0x'), 16),
+      };
+    }
   }
 
   // Stop the note from a user, specified by their id
@@ -196,7 +211,7 @@ export class MidiController extends React.Component  {
         <div>
           {error && <div>Web MIDI is not supported by this browser (try using Chrome)</div>}
           <span>Input: </span>
-          <select value={device} onChange={this.handleDeviceSelect}>
+          <select disabled={loading} value={device} onChange={this.handleDeviceSelect}>
             <option value=""></option>
             {this.state.devices.map(device => <option key={device} value={device}>{device}</option>)}
           </select>
