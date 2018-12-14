@@ -13,10 +13,9 @@ export class Login extends Component {
      return (
       <div className="row" id="Body">
         <div className="medium-5 columns left">
-          <h2 id="welcomeText">Play some sweet sweet music</h2>
-          <h4>Login</h4>
-          <label>Username</label>
-          <input type="text" name="username" placeholder="Username" onChange={this.props.handleUserNameChange}/>
+          <h2 id="welcomeText">The People&#8217;s Piano</h2>
+          <h3 id="subText">Play some sweet, sweet music</h3>
+          <input id="playerName" type="text" name="username" placeholder="Username" onChange={this.props.handleUserNameChange}/>
           <input type="submit" className="button success" value="Join" onClick={this.join}/>
         </div>
       </div>

@@ -3,3 +3,27 @@
   top: 0;
   right: 0;
 }
+
+#Body{
+  text-align: center;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+#subText {
+  text-align: center;
+  font-weight: bold;
+  font-size: 25px;
+}
+
+#welcomeText{
+    text-align: center;
+    font-weight: bold;
+    font-size: 50px;
+}
+
+#playerName{
+  text-align: center;
+  font-weight: bold;
+  font-size: 12px;
+}
