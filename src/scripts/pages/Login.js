@@ -16,8 +16,10 @@ export class Login extends Component {
           <h2 id="welcomeText">Play some sweet sweet music</h2>
           <h4>Login</h4>
           <label>Username</label>
-          <input type="text" name="username" placeholder="Username" onChange={this.props.handleUserNameChange}/>
-          <input type="submit" className="button success" value="Join" onClick={this.join}/>
+          <form onSubmit={this.join}>
+            <input type="text" name="username" placeholder="Username" onChange={this.props.handleUserNameChange}/>
+            <input type="submit" className="button success" value="Join" onClick={this.join}/>
+          </form>
         </div>
       </div>
     );

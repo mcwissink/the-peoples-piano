@@ -1,5 +1,6 @@
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const CompressionPlugin = require('compression-webpack-plugin');
 const path = require('path');
 
 module.exports = {
@@ -33,6 +34,9 @@ module.exports = {
     ]
   },
   plugins: [
+    new CompressionPlugin({
+      test: /\.js(\?.*)?$/i
+    }),
     new HtmlWebpackPlugin({template: __dirname + "/src/index.html"})
   ]
 };
