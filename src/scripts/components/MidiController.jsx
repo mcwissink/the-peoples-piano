@@ -1,11 +1,11 @@
 import React from 'react';
 import WebMidi from 'webmidi';
 import io from 'socket.io-client';
-import Soundfont from 'soundfont-player';
-import {keyboardMapping, soundfonts} from '../util.js';
+import {keyboardMapping} from '../util.js';
 import {Pianist} from './Pianist.jsx';
 import {Piano} from './Piano.jsx';
 import * as PIXI from 'pixi.js';
+import MIDISounds from 'midi-sounds-react';
 
 const KEYBOARD_INPUT = "computer keyboard";
 
@@ -18,7 +18,7 @@ export class MidiController extends React.Component  {
       error: false,
       devices: [KEYBOARD_INPUT],
       device: "",
-      soundfont: soundfonts[2],
+      instrument: 0,
       users: [],
     };
     // Create our socket
@@ -61,9 +61,6 @@ export class MidiController extends React.Component  {
         WebMidi.addListener("disconnected", () => this.updateDevices());
       }
     });
-
-    // Setup the soundfont
-    this.setSoundfont(this.state.soundfont);
   }
 
   socketOnOpen = () => {
@@ -71,10 +68,15 @@ export class MidiController extends React.Component  {
     this.socket.send(name);
   }
 
-  handleSoundfonSelect = e => {
-    const soundfont = e.target.value;
-    this.setState({ soundfont });
-    this.setSoundfont(soundfont);
+  handleInstrumentSelect = e => {
+    const instrument = e.target.value;
+    // Set the instrument to -1 until it is loaded
+    this.midiSounds.cacheInstrument(instrument);
+    this.midiSounds.player.loader.waitLoad(() => {
+			this.setState({
+				instrument,
+			});
+		});
   }
 
   handleDeviceSelect = e => {
@@ -118,24 +120,6 @@ export class MidiController extends React.Component  {
     }
   }
 
-  setSoundfont = soundfont => {
-    // Only load one soundfont at a time
-    if (!this.state.loading) {
-      // Set soundfont and tell user we are loading
-      this.setState({ soundfont, loading: true });
-      // Initalize the Soundfont
-      Soundfont.instrument(this.ac, soundfont, { adsr: [0.01, 0.1, 1, 100] }).then(soundfont => {
-        if (this.state.device === '') {
-          this.setDevice(this.state.devices[0]);
-        }
-        // Set a reference to the sound font so we can call it later
-        this.soundfont = soundfont;
-        // We are done loading
-        this.setState({ loading: false });
-      });
-    }
-  }
-
   setMidiDevice = device => {
     // Clean up an existing connections
     this.removeExistingMidiDevice();
@@ -158,11 +142,14 @@ export class MidiController extends React.Component  {
 
   // Play the note from a user, specified by their id
   playNote = (note, id) => {
-    // Loading soundfont is async so make sure it exists before accessing it
-    if (this.soundfont !== undefined) {
+    // Loading instrument is async so make sure it exists before accessing it
+    if (this.midiSounds) {
       // Play the sound locally and store a reference to the player
       this.activeNotes[note] = {
-        player: this.soundfont.start(note),
+        player: this.midiSounds.player.queueWaveTable(
+          this.midiSounds.audioContext,
+          this.midiSounds.equalizer.input,
+  			  window[this.midiSounds.player.loader.instrumentInfo(this.state.instrument).variable], 0, note, 9999, 1),
         color: parseInt(this.state.users.find(u => u.id === id).color.replace(/\#/, '0x'), 16),
       };
     }
@@ -172,7 +159,7 @@ export class MidiController extends React.Component  {
   stopNote = (note, id) => {
     const activeNote = this.activeNotes[note];
     if (activeNote !== undefined) {
-      activeNote.player.stop();
+      activeNote.player.cancel();
       // Free up memory, less work for garbage collection?
       delete this.activeNotes[note];
     }
@@ -196,13 +183,25 @@ export class MidiController extends React.Component  {
     this.setState({ devices });
   }
 
+  createSelectItems() {
+		if (this.midiSounds) {
+			if (!(this.items)) {
+				this.items = [];
+				for (let i = 0; i < this.midiSounds.player.loader.instrumentKeys().length; i++) {
+					this.items.push(<option key={i} value={i}>{'' + (i + 0) + '. ' + this.midiSounds.player.loader.instrumentInfo(i).title}</option>);
+				}
+			}
+			return this.items;
+		}
+	}
+
   render() {
     const {
       devices,
       device,
       loading,
       error,
-      soundfont,
+      instrument,
       users,
     } = this.state;
     return (
@@ -216,9 +215,9 @@ export class MidiController extends React.Component  {
             {this.state.devices.map(device => <option key={device} value={device}>{device}</option>)}
           </select>
           <br/>
-          <span>Sound: </span>
-          <select value={soundfont} onChange={this.handleSoundfonSelect}>
-            {soundfonts.map(sf => <option key={sf} value={sf}>{sf}</option>)}
+          <span>Instrument: </span>
+          <select onChange={this.handleInstrumentSelect}>
+            {this.createSelectItems()}
           </select>
           {loading && <span> Loading...</span>}
         </div>
@@ -226,6 +225,12 @@ export class MidiController extends React.Component  {
         <div>
           {users.map(user => <Pianist socket={this.socket} name={user.name} color={user.color} upvotes={user.upvotes} downvotes={user.downvotes} id={user.id}/>)}
         </div>
+        <MIDISounds ref={ref => {
+          if (ref !== null) {
+            this.midiSounds = ref;
+            this.midiSounds.cacheInstrument(instrument);
+          }
+        }} />
       </div>
     );
   }
